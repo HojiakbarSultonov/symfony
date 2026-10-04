@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Component\User\UserInfoDto;
@@ -25,7 +26,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(),
+        new GetCollection(
+            security: "is_granted('ROLE_ADMIN')",
+        ),
         new Post(
             uriTemplate: '/users/my',
             controller: UserCreateAction::class,
@@ -41,6 +44,9 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
           uriTemplate: '/users/auth',
           name: 'auth'
+        ),
+        new Get(
+            security: "is_granted('ROLE_ADMIN') || object === user"
         ),
         new Delete(),
     ]

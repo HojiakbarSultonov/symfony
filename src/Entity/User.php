@@ -18,6 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\PostPersist;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -37,6 +38,10 @@ use Symfony\Component\Validator\Constraints as Assert;
             input: UserInfoDto::class,
             name: 'userInfo'
         ),
+        new Post(
+          uriTemplate: '/users/auth',
+          name: 'auth'
+        ),
         new Delete(),
     ]
 )]
@@ -53,7 +58,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['id'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt'])]
-class User implements  PasswordAuthenticatedUserInterface
+
+
+class User implements  PasswordAuthenticatedUserInterface, UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -186,7 +193,7 @@ class User implements  PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        return $this->roles;
+        return ['ROLE_USER'];
     }
 
     public function setRoles(array $roles): static
@@ -206,5 +213,15 @@ class User implements  PasswordAuthenticatedUserInterface
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // TODO: Implement eraseCredentials() method.
+    }
+
+    public function getUserIdentifier(): string
+    {
+      return $this->getEmail();  // TODO: Implement getUserIdentifier() method.
     }
 }

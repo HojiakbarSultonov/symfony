@@ -1,20 +1,48 @@
 <?php
 
 namespace App\Entity;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use App\Controller\UserCreateAction;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\PostPersist;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Post(
+            uriTemplate: '/users/my',
+            controller: UserCreateAction::class,
+            name:'createUser'
+        ),
+        new Delete(),
+    ]
+)]
+#[ApiResource(
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
+    paginationItemsPerPage: 5
 )]
 #[UniqueEntity('email', message: 'The email {{ value }} is already in use')]
+#[ApiFilter(SearchFilter::class, properties: [
+    'id' => 'exact',
+    'email' => 'partial',
+    'phone' => 'start',
+])]
+#[ApiFilter(OrderFilter::class, properties: ['id'])]
+#[ApiFilter(DateFilter::class, properties: ['createdAt'])]
 class User
 {
     #[ORM\Id]

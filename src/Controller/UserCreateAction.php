@@ -3,7 +3,9 @@
 declare(strict_types=1);
 namespace App\Controller;
 
+use ApiPlatform\Validator\ValidatorInterface;
 use App\Component\User\UserFactory;
+use App\Component\User\UserManager;
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -11,10 +13,16 @@ class UserCreateAction extends AbstractController
 
 {
 
-    public function __construct(private  UserFactory $userFactory){}
-    public function __invoke(User $user):void
+    public function __construct(
+        private  UserFactory $userFactory,
+        private UserManager $userManager,
+        private ValidatorInterface $validator
+    ){}
+    public function __invoke(User $user):User
     {
-    $user = $this->userFactory->create(
+        $this->validator->validate($user);
+
+        $user = $this->userFactory->create(
         $user->getEmail(),
         $user->getPassword(),
         $user->getAge(),
@@ -22,7 +30,8 @@ class UserCreateAction extends AbstractController
         $user->getPhone(),
         $user->getGivenName()
     );
-        print_r($user);
-        exit();
+    $this->userManager->save($user, isNeedFlush: true);
+
+        return $user;
     }
 }

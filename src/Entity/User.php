@@ -26,6 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
             uriTemplate: '/users/my',
             controller: UserCreateAction::class,
+            validate: false,
             name:'createUser'
         ),
         new Delete(),
@@ -84,7 +85,7 @@ class User implements  PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Regex(
-        pattern: '/^\+d{9,15}$/',
+        pattern: '/^\+\d{5,15}$/',
         message: "Telefon raqam faqat + va raqamlardan iborat bo'lishi kerak"
     )]
     #[Groups(['user:read', 'user:write'])]
@@ -95,7 +96,7 @@ class User implements  PasswordAuthenticatedUserInterface
     private array $roles = ["ROLE_USER"];
 
     #[ORM\Column]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function getId(): ?int
